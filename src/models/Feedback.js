@@ -16,7 +16,7 @@ const FeedbackSchema = new mongoose.Schema(
       enum: ["Bug", "Feature", "Improvement"],
       required: true,
     },
-    votes: {
+    upvotes: {
       type: Number,
       default: 0,
     },
@@ -26,3 +26,4 @@ const FeedbackSchema = new mongoose.Schema(
 
 const Feedback = mongoose.model("Feedback", FeedbackSchema);
 export default Feedback;
+
