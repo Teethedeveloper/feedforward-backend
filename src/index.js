@@ -8,15 +8,34 @@ dotenv.config();
 
 const app = express();
 
+// Allowed origins
+const allowedOrigins = [
+  "https://feedforward-frontend.onrender.com", // frontend Render URL
+  "http://localhost:5173" // local dev
+];
+
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: [
-    "https://feedforward-frontend.onrender.com", // frontend Render URL
-    "http://localhost:5173" // local dev
-  ]
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true
 }));
 
+// Handle preflight requests for all routes
+app.options("*", cors({
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true
+}));
+
+// DB connection
 connectDB();
 
 // Routes
