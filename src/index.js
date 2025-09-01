@@ -10,9 +10,13 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://feedforward-frontend.onrender.com", // frontend Render URL
+    "http://localhost:5173" // local dev
+  ]
+}));
 
-// DB connection
 connectDB();
 
 // Routes
