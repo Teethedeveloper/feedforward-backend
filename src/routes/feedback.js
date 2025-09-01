@@ -3,14 +3,12 @@ import Feedback from "../models/Feedback.js";
 
 const router = express.Router();
 
-// POST /feedback - create new feedback
+// POST /feedback
 router.post("/", async (req, res) => {
   try {
     const { title, description, category } = req.body;
-
-    if (!title || !description || !category) {
+    if (!title || !description || !category)
       return res.status(400).json({ message: "All fields are required" });
-    }
 
     const feedback = await Feedback.create({ title, description, category });
     res.status(201).json(feedback);
@@ -19,19 +17,16 @@ router.post("/", async (req, res) => {
   }
 });
 
-// GET /feedback - list feedback with optional filters
+// GET /feedback
 router.get("/", async (req, res) => {
   try {
     const { sort, category, q } = req.query;
-
-    let query = {};
+    const query = {};
     if (category) query.category = category;
     if (q) query.title = { $regex: q, $options: "i" };
 
     let feedbacks = Feedback.find(query);
-
-    if (sort === "oldest") feedbacks = feedbacks.sort({ createdAt: 1 });
-    else feedbacks = feedbacks.sort({ createdAt: -1 });
+    feedbacks = sort === "oldest" ? feedbacks.sort({ createdAt: 1 }) : feedbacks.sort({ createdAt: -1 });
 
     const results = await feedbacks;
     res.json(results);
@@ -40,7 +35,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// PATCH /feedback/:id/upvote - increment upvotes
+// PATCH /feedback/:id/upvote
 router.patch("/:id/upvote", async (req, res) => {
   try {
     const feedback = await Feedback.findById(req.params.id);
@@ -55,16 +50,17 @@ router.patch("/:id/upvote", async (req, res) => {
   }
 });
 
-// DELETE /feedback/:id - delete feedback
+// DELETE /feedback/:id
 router.delete("/:id", async (req, res) => {
   try {
     const feedback = await Feedback.findByIdAndDelete(req.params.id);
     if (!feedback) return res.status(404).json({ message: "Feedback not found" });
 
-    res.json(req.params.id);
+    res.json({ deletedId: req.params.id });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
 export default router;
+
