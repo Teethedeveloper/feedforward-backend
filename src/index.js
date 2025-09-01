@@ -1,3 +1,4 @@
+// index.js
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -8,37 +9,40 @@ dotenv.config();
 
 const app = express();
 
-// Allowed origins
+// ✅ Allowed origins for CORS
 const allowedOrigins = [
   "https://feedforward-frontend.onrender.com",
   "http://localhost:5173"
 ];
 
-// Middleware
+// ✅ Middleware
 app.use(express.json());
 
-// Single dynamic CORS setup for all requests, including preflight
+// ✅ CORS setup
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin like Postman or curl
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   credentials: true
 }));
 
-// Routes
+// ✅ Prevent caching for API responses
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+});
+
+// ✅ Routes
 app.use("/feedback", feedbackRoutes);
 
-// DB connection
+// ✅ Connect to database
 connectDB();
 
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
 
