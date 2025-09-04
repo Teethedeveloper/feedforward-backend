@@ -2,6 +2,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import mongoose from "mongoose";  // 👈 import mongoose so we can check status
 import connectDB from "./config/db.js";
 import feedbackRoutes from "./routes/feedback.js";
 
@@ -35,6 +36,24 @@ app.use((req, res, next) => {
 
 // ✅ Routes
 app.use("/feedback", feedbackRoutes);
+
+// ✅ Test MongoDB connection route
+app.get("/test-mongo", (req, res) => {
+  const state = mongoose.connection.readyState;
+  /*
+    0 = disconnected
+    1 = connected
+    2 = connecting
+    3 = disconnecting
+  */
+  if (state === 1) {
+    res.status(200).send("✅ MongoDB is connected");
+  } else if (state === 2) {
+    res.status(200).send("⏳ MongoDB is connecting...");
+  } else {
+    res.status(500).send("❌ MongoDB is NOT connected");
+  }
+});
 
 // ✅ Connect to database
 connectDB();
