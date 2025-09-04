@@ -2,12 +2,18 @@
 import mongoose from "mongoose";
 
 const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000, // Stop trying after 5s
-      socketTimeoutMS: 45000,         // Close sockets after 45s idle
-    });
+  const uri = process.env.MONGO_URI;
 
+  if (!uri) {
+    console.error("❌ MONGO_URI is not defined. Please set it in .env or Render Environment Variables");
+    return;
+  }
+
+  try {
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000, // 5s timeout
+      socketTimeoutMS: 45000,         // 45s idle timeout
+    });
     console.log("✅ MongoDB connected");
 
     mongoose.connection.on("disconnected", () => {
@@ -21,8 +27,7 @@ const connectDB = async () => {
 
   } catch (err) {
     console.error("❌ MongoDB initial connection failed:", err.message);
-    // Retry after 5s
-    setTimeout(connectDB, 5000);
+    setTimeout(connectDB, 5000); // retry after 5s
   }
 };
 
