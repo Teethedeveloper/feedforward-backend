@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
+import helmet from "helmet";   // <-- Add helmet
 import connectDB from "./config/db.js";
 import feedbackRoutes from "./routes/feedback.js";
 
@@ -21,21 +22,28 @@ const allowedOrigins = [
 app.use(cors({
   origin: allowedOrigins,
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-  credentials: true // only needed if using cookies
 }));
 
-// ✅ Prevent caching
+// ✅ Security headers (helmet covers most)
+app.use(helmet({
+  contentSecurityPolicy: false, // disable if CSP breaks frontend for now
+}));
+
+// ✅ Explicit no-cache headers (extra safety)
 app.use((req, res, next) => {
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
+  );
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
+  res.setHeader("X-Content-Type-Options", "nosniff"); // <-- Important fix
   next();
 });
 
 // ✅ Routes
 app.use("/feedback", feedbackRoutes);
 
-// ✅ Test MongoDB connection
 app.get("/test-mongo", (req, res) => {
   const state = mongoose.connection.readyState;
   if (state === 1) {
